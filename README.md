@@ -6,7 +6,9 @@
 
 
 ## Sobre o desafio
-//@todo Escrever1 a 2 parágrafos descrevendo a tarefa em suas palavras
+Primeiro gerei o conhecimento do projeto no Claude com o famigerado `/init`. Em seguida, utilizando o SDD, criei uma `context/intent` (conceito do framework ContextMesh) para elaborar um documento base que orientasse a criação das docs, aproveitando parte da estrutura do próprio desafio e adaptando-a conforme minhas ideias, sempre respeitando a proposta inicial. A partir daí, extraí os trechos de requisitos referentes a Skills, para usufruir desse recurso do Claude de forma progressiva — e também como exercício prático.
+
+Com isso, já tinha em mãos um start consistente para o desafio, restando iterar quantas vezes fosse necessário até atingir o resultado esperado. Para isso, criei intents de revisão (`context/intent/review`), pautados nas exigências do desafio, que me ajudaram a validar os critérios obrigatórios. Por fim, redigi o README, trazendo a experiência final de todo o processo.
 
 ## Ferramentas de IA utilizadas
 - **Claude CLI:** usado para levantar os requisitos do projeto e executar skills para criação dos documentos
@@ -14,19 +16,12 @@
 - **Context Mesh:** framework usado para organizar e estruturar as specs (SDD)
 
 ## Workflow adotado
-Primeiro gerei o conhecimento do projeto no Claude com o nosso famigerado `/init`.
-
-Em seguida, usando o SDD, criei uma **context/intent** (conceito utilizado no framework ContextMesh) para elaborar um documento base para a criação das docs.
-Neste documento aproveitei parte da estrutura do próprio desafio para organizar os tópicos, e fui modificando de acordo com minhas ideias mas sempre respeitando a proposta
-inicial.
-
-Extraí os trechos de requisitos para **Skills**, para usufruir deste recurso no Claude de forma progressiva (e para exercitar um pouco também).
-
-Com isso eu já tinha em mãos um start consistente para o desafio, ficando a missão de iterar quantas vezes fosse necessário para obter o resultado esperado.
-
-Criei `intents` para revisar o conteúdo (`context/intent/review`), pautado nas exigências do desafio e também para me ajudar a validar os critérios obrigatórios.
-
-Finalmente redigi este `README` trazendo a experiência final de todo o processo.
+1. Inicialização do projeto 
+2. Definição do contexto (SDD + ContextMesh)
+3. Extração de Skills
+4. Iteração
+5. Revisão via intents/specs (+ iterações)
+6. Documentação final + checklist de critérios de aceite
 
 
 ## Prompts customizados
@@ -70,8 +65,18 @@ O conteúdo satisfaz o critério (5 itens listados), mas se algum verificador au
 ```
 Com isso realizei o ajuste pontual para manter a consistência.
 
+Além disso também foram encontradas algumas discrepâncias no quesito padronização e consistência em uma revisão final, tais como:
+1. Nome da tabela de outbox/DLQ diverge entre os documentos (a mais notável)
+2. docs/adrs/README.md documenta uma convenção de nome errada
+3. WEBHOOK_ALREADY_PROCESSED referencia um estado que a modelagem não guarda
 
-Foram necessárias **5 iterações principais** até chegar ao resultado final.
+Prompt proposto para ajuste:
+```
+padronizar em webhook_outbox_events/webhook_dead_letters (o nome plural do FDD) em todos os lugares, atualizar o docs/adrs/README.md para refletir a convenção ADR-NNN-*, e adicionar um campo replayedAt ao WebhookDeadLetter no FDD (ajustando a descrição do erro).
+```
+
+
+Ao todo foram necessárias **7 iterações principais** (considerando as specs de review) até chegar ao resultado final.
 
 ## Como navegar a entrega
 1. `README.md`: consolidação das principais ideias utilizadas no desafio

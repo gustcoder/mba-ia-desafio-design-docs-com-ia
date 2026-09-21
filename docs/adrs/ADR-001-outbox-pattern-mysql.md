@@ -18,7 +18,7 @@ transação) ou assíncrona via algum mecanismo de fila/outbox.
 ## Decisão
 
 Adotar o padrão Outbox sobre o MySQL existente: dentro da mesma transação que atualiza `order` e
-`order_status_history`, inserir uma linha em uma nova tabela `webhook_outbox` com o evento já renderizado
+`order_status_history`, inserir uma linha em uma nova tabela `webhook_outbox_events` com o evento já renderizado
 (snapshot no momento da inserção, não recalculado depois). A tabela tem índice nos campos de status do
 evento (pendente, processando, falhou, entregue) e em `created_at`. Um worker externo (ver ADR-005) lê os
 eventos pendentes e faz a entrega.

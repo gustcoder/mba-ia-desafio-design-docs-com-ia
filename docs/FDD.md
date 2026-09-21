@@ -59,7 +59,8 @@ explícitos):
   (`PENDING | PROCESSING | DELIVERED | FAILED`), `attempts`, `nextAttemptAt`, `createdAt`, `updatedAt`.
   Índices em `status` e `createdAt` (usados pelo polling do worker).
 - **`WebhookDeadLetter`** (`@@map("webhook_dead_letters")`): `id`, `webhookOutboxEventId`, `payload`,
-  `reason`, `failedAt`. Índice em `webhookOutboxEventId`.
+  `reason`, `failedAt`, `replayedAt` (nullable — marcado no momento do replay, usado para impedir um
+  segundo replay do mesmo item). Índice em `webhookOutboxEventId`.
 - **`WebhookDelivery`** (`@@map("webhook_deliveries")`): histórico consultável via
   `GET /webhooks/:id/deliveries` — `id`, `webhookEndpointId`, `webhookOutboxEventId`, `success` (boolean),
   `responseStatusCode` (nullable), `responseTimeMs`, `attemptedAt`. Índice em `webhookEndpointId`.
@@ -111,8 +112,10 @@ explícitos):
 1. Ao esgotar as 5 tentativas, o evento é marcado `status = FAILED` e uma linha é inserida em
    `webhook_dead_letters` com o payload, o motivo da última falha e o timestamp.
 2. Um operador com role `ADMIN` pode disparar `POST /api/v1/admin/webhooks/dead-letter/:id/replay`
-   (ver Contratos Públicos), que recria um `WebhookOutboxEvent` com `status = PENDING` e `attempts = 0`
-   a partir do payload salvo na DLQ, e registra em log/auditoria qual usuário fez o replay.
+   (ver Contratos Públicos), que verifica se `WebhookDeadLetter.replayedAt` ainda está nulo (senão,
+   retorna `WEBHOOK_ALREADY_PROCESSED`), recria um `WebhookOutboxEvent` com `status = PENDING` e
+   `attempts = 0` a partir do payload salvo na DLQ, marca `replayedAt = now()` no registro de DLQ, e
+   registra em log/auditoria qual usuário fez o replay.
 
 ## Contratos Públicos
 
@@ -244,7 +247,7 @@ Toda chamada HTTP feita pelo worker para a `url` cadastrada carrega:
 | `WEBHOOK_INVALID_EVENT_FILTER` | 400 | Campo `events` contém valor fora do enum `OrderStatus` |
 | `WEBHOOK_PAYLOAD_TOO_LARGE` | 422 | Payload renderizado do evento excede 64KB no momento da inserção na outbox |
 | `WEBHOOK_INACTIVE` | 409 | Operação (ex.: replay) tentada sobre um webhook desativado |
-| `WEBHOOK_ALREADY_PROCESSED` | 409 | Replay solicitado para item de DLQ que já foi reenfileirado |
+| `WEBHOOK_ALREADY_PROCESSED` | 409 | Replay solicitado para item de DLQ cujo `replayedAt` já está preenchido (reenfileirado anteriormente) |
 
 Todas seguem o padrão de `AppError` (`src/shared/errors/app-error.ts`): `statusCode` + `errorCode` +
 `details` opcionais, capturadas automaticamente pelo error middleware existente.

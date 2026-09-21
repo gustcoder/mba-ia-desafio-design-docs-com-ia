@@ -6,7 +6,7 @@ Aceita
 
 ## Contexto
 
-Alguém precisa consumir a `webhook_outbox` (ADR-001) e efetivamente chamar os endpoints dos clientes.
+Alguém precisa consumir a `webhook_outbox_events` (ADR-001) e efetivamente chamar os endpoints dos clientes.
 A equipe discutiu se esse consumidor deveria rodar dentro do mesmo processo da API ou como um processo
 independente, e como ele deveria descobrir novos eventos.
 

@@ -40,7 +40,7 @@ transação Prisma, a atualização de status, o registro de histórico e o ajus
 A proposta tem quatro pilares, cada um formalizado em um ADR dedicado (seção "Decisões relacionadas"):
 
 1. **Emissão transacional (Outbox).** Ao mudar o status de um pedido, `changeStatus` insere — na mesma
-   transação SQL — um evento em uma tabela `webhook_outbox`, já com o payload renderizado (snapshot do
+   transação SQL — um evento em uma tabela `webhook_outbox_events`, já com o payload renderizado (snapshot do
    momento da mudança, não recalculado depois). Se a transação principal falhar, o evento nunca existiu;
    se ela commitar, o evento está garantidamente lá. A inserção é filtrada pela lista de status que cada
    webhook do customer assinou — se nenhum webhook quer aquele status, nada é inserido.
@@ -49,7 +49,7 @@ A proposta tem quatro pilares, cada um formalizado em um ADR dedicado (seção "
    endpoint HTTP configurado pelo cliente, com timeout de 10 segundos por chamada.
 3. **Resiliência via retry + DLQ.** Falhas de entrega são reentregues com backoff exponencial (5
    tentativas, 1m/5m/30m/2h/12h); esgotadas as tentativas, o evento vai para uma tabela
-   `webhook_dead_letter` e pode ser reprocessado manualmente por um endpoint administrativo restrito a
+   `webhook_dead_letters` e pode ser reprocessado manualmente por um endpoint administrativo restrito a
    role `ADMIN`.
 4. **Segurança da entrega.** Cada endpoint de webhook cadastrado tem uma secret própria (não global),
    usada para assinar o payload com HMAC-SHA256 (`X-Signature`), com suporte a rotação com grace period de
