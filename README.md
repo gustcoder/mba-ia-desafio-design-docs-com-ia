@@ -4,48 +4,151 @@
 ![IA](https://img.shields.io/badge/Focus-AI%20Engineering-blueviolet?style=for-the-badge&logo=openai)
 ![FullCycle](https://img.shields.io/badge/School-FullCycle-yellow?style=for-the-badge)
 
+
+## Sobre o desafio
+//@todo Escrever1 a 2 parágrafos descrevendo a tarefa em suas palavras
+
+## Ferramentas de IA utilizadas
+- **Claude CLI:** usado para levantar os requisitos do projeto e executar skills para criação dos documentos
+- **Claude CoWork:** usado via chat para realizar ajustes finos que não necessitavam ser uma Spec
+- **Context Mesh:** framework usado para organizar e estruturar as specs (SDD)
+
+## Workflow adotado
+Primeiro gerei o conhecimento do projeto no Claude com o nosso famigerado `/init`.
+
+Em seguida, usando o SDD, criei uma **context/intent** (conceito utilizado no framework ContextMesh) para elaborar um documento base para a criação das docs.
+Neste documento aproveitei parte da estrutura do próprio desafio para organizar os tópicos, e fui modificando de acordo com minhas ideias mas sempre respeitando a proposta
+inicial.
+
+Extraí os trechos de requisitos para **Skills**, para usufruir deste recurso no Claude de forma progressiva (e para exercitar um pouco também).
+
+Com isso eu já tinha em mãos um start consistente para o desafio, ficando a missão de iterar quantas vezes fosse necessário para obter o resultado esperado.
+
+Criei `intents` para revisar o conteúdo (`context/intent/review`), pautado nas exigências do desafio e também para me ajudar a validar os critérios obrigatórios.
+
+Finalmente redigi este `README` trazendo a experiência final de todo o processo.
+
+
+## Prompts customizados
+1. Optei por transformar a sessão de Requisitos das docs em skills na Spec criada no Context Mesh:
+```
+#### 1. PRD da feature
+Usar a skill `prd-creator` cobrindo a feature de Sistema de Webhooks de Notificação de Pedidos.
+
+#### 2. RFC da feature
+Usar a skill `rfc-creator` para criar documento com a proposta técnica da solução, no formato de um documento submetido à equipe para revisão.
+
+#### 3. FDD da feature
+Usar a skill `fdd-creator` para detalhar o "como implementar" da feature.
+
+#### 4. ADRs
+Usando a skill `adr-creator`, produza 6 ADRs em arquivos separados dentro de `../../docs/adrs/`.
+
+#### 5. Tracker de Rastreabilidade
+Usar a skill `tracker-creator` para criar o arquivo de rastreabilidade.
+```
+
+2. Adicionar conhecimento sobre as skills no CLAUDE.md:
+```
+Atualize o CLAUDE.md para conter as skills criadas no projeto, com instruções básicas de uso baseada no que está escrito na sessão "Requisitos" do arquivo de intent `docs-creator-v1`
+```
+
+## Iterações e ajustes
+Ao revisar as documentações foi possível notar que várias menções diretas da transcrição, inclusive com timestamp [hh:ss] estavam presentes, dando a impressão de "copia e cola"
+que queremos evitar.
+
+Foi então aplicado um ajuste de **limpeza + melhoria de texto** nesse sentido:
+```
+ Remover os [hh:mm] Nome do corpo de PRD/RFC/FDD/ADRs (reescrevendo essas frases em prosa direta) e deixar toda a rastreabilidade formal apenas no Tracker
+```
+
+Ao revisar os critérios de aceite, foi possível identificar um possível gap de interpretação referente ao **PRD — "Fora de escopo"** ao rodar agentes automatizados.
+```
+PRD — "Fora de escopo" é um rótulo em negrito dentro de ## Escopo, não um heading ## próprio. 
+O conteúdo satisfaz o critério (5 itens listados), mas se algum verificador automatizado procurar literalmente por um heading 
+## Fora de Escopo, ele não vai encontrar.
+```
+Com isso realizei o ajuste pontual para manter a consistência.
+
+
+Foram necessárias **5 iterações principais** até chegar ao resultado final.
+
+## Como navegar a entrega
+1. `README.md`: consolidação das principais ideias utilizadas no desafio
+2. `CLAUDE.md`: instruções gerais sobre o projeto e orientações sobre o uso de skills
+3. `context/intent/docs-creator-v1.md`: spec inicial criada para conduzir o Claude na geração dos documentos
+4. `context/intent/review`: specs adicionais para corrigir erros e aplicar ajustes finos
+5. `.claude/skills/*-creator/SKILL.md`: instruções extraídas das definições do desafio para gerar skills visando o uso progressivo pela IA
+6. `docs/adrs`: ADRs geradas para a feature
+7. `docs/FDD.md`: Documento FDD gerado para a feature
+8. `docs/PRD.md`: Documento PRD gerado para a feature
+9. `docs/RFC.md`: Documento RFC gerado para a feature
+10. `docs/TRACKER.md`: Documento TRACKER gerado para a feature
+
+## Ideias Descartadas da Feature
+
+| # | Ideia descartada/adiada | Quando/quem |
+|---|---|---|
+| 1 | Disparo síncrono da notificação dentro de `changeStatus` | [09:03]–[09:04] Bruno/Larissa |
+| 2 | Fila externa dedicada (Redis Streams) em vez de outbox no MySQL | [09:06]–[09:07] Diego/Larissa |
+| 3 | Trigger de banco (MySQL) para notificar o worker reativamente | [09:09] Diego |
+| 4 | Retry indefinido (sem teto de tentativas) | [09:15] Diego |
+| 5 | Retry com apenas 3 tentativas | [09:16] Bruno/Diego |
+| 6 | Marcar falha permanente na própria `outbox` (`status = failed`) em vez de tabela DLQ separada | [09:18] Diego |
+| 7 | Secret global compartilhada entre todos os endpoints (em vez de secret por endpoint) | [09:21] Sofia |
+| 8 | Truncar payload acima do limite (em vez de erro) | [09:23]–[09:24] Sofia/Diego |
+| 9 | Garantia de entrega exactly-once | [09:24]–[09:25] Diego |
+| 10 | Notificação proativa (e-mail) ao cliente em falhas recorrentes | [09:37]–[09:38] Marcos/Larissa |
+| 11 | Rate limiting de envio implementado nesta fase | [09:38]–[09:39] Diego/Larissa |
+| 12 | Dashboard/painel visual para o cliente | [09:39]–[09:40] Larissa/Marcos |
+| 13 | Múltiplos workers em paralelo com garantia de ordering global | [09:12]–[09:13] Diego |
+| 14 | Webhooks de entrada (cliente enviando dados para nós) | [09:02]–[09:03] Marcos/Sofia |
+| 15 | ID auto-incremental para a outbox (em vez de UUID) | [09:51] Larissa/Diego |
+| 16 | Payload renderizado só na hora do envio, guardando apenas `order_id` (em vez de snapshot na inserção) | [09:51]–[09:52] Bruno/Larissa/Diego |
+
 ## Critérios de Aceite
 
 **PRD (`docs/PRD.md`)**
-- [ ] Arquivo existe e está em Markdown
-- [ ] Contém todas as seções obrigatórias listadas no requisito 1
-- [ ] Identifica no mínimo 8 requisitos funcionais discutidos na reunião
-- [ ] Inclui pelo menos 1 objetivo com métrica e meta quantitativa
-- [ ] Seção "Fora de escopo" lista pelo menos 2 itens explicitamente descartados ou adiados na reunião
-- [ ] Seção "Riscos" inclui pelo menos 2 riscos com probabilidade, impacto e mitigação
+- [x] Arquivo existe e está em Markdown
+- [x] Contém todas as seções obrigatórias listadas no requisito 1
+- [x] Identifica no mínimo 8 requisitos funcionais discutidos na reunião
+- [x] Inclui pelo menos 1 objetivo com métrica e meta quantitativa
+- [x] Seção "Fora de escopo" lista pelo menos 2 itens explicitamente descartados ou adiados na reunião
+- [x] Seção "Riscos" inclui pelo menos 2 riscos com probabilidade, impacto e mitigação
 
 **RFC (`docs/RFC.md`)**
-- [ ] Arquivo existe e está em Markdown
-- [ ] Contém todas as seções obrigatórias listadas no requisito 2
-- [ ] Seção "Alternativas consideradas" lista pelo menos 2 alternativas descartadas na reunião, cada uma com o trade-off que motivou o descarte
-- [ ] Seção "Questões em aberto" lista pelo menos 2 pontos adiados ou não decididos na reunião
-- [ ] Referencia, com link, pelo menos 2 ADRs do pacote
-  FDD (`docs/FDD.md`)
-- [ ] Arquivo existe e está em Markdown
-- [ ] Contém todas as seções obrigatórias listadas no requisito 3
-- [ ] Seção "Contratos públicos" inclui pelo menos 4 endpoints HTTP com payload de exemplo (request e response) e status codes
-- [ ] Matriz de erros usa códigos com prefixo WEBHOOK_
-- [ ] Seção "Integração com o sistema existente" referencia pelo menos 4 caminhos de arquivo reais do código base
-- [ ] Seção "Observabilidade" cita métricas, logs e tracing
+- [x] Arquivo existe e está em Markdown
+- [x] Contém todas as seções obrigatórias listadas no requisito 2
+- [x] Seção "Alternativas consideradas" lista pelo menos 2 alternativas descartadas na reunião, cada uma com o trade-off que motivou o descarte
+- [x] Seção "Questões em aberto" lista pelo menos 2 pontos adiados ou não decididos na reunião
+- [x] Referencia, com link, pelo menos 2 ADRs do pacote
+
+**FDD (`docs/FDD.md`)**
+- [x] Arquivo existe e está em Markdown
+- [x] Contém todas as seções obrigatórias listadas no requisito 3
+- [x] Seção "Contratos públicos" inclui pelo menos 4 endpoints HTTP com payload de exemplo (request e response) e status codes
+- [x] Matriz de erros usa códigos com prefixo WEBHOOK_
+- [x] Seção "Integração com o sistema existente" referencia pelo menos 4 caminhos de arquivo reais do código base
+- [x] Seção "Observabilidade" cita métricas, logs e tracing
 
 **ADRs (`docs/adrs/ADR-NNN-*.md`)**
-- [ ] Pasta docs/adrs/ contém entre 5 e 8 arquivos no formato ADR-NNN-titulo-em-kebab-case.md
-- [ ] Cada ADR contém as seções Status, Contexto, Decisão, Alternativas Consideradas, Consequências
-- [ ] O conjunto cobre pelo menos 5 das 6 decisões principais listadas no requisito 4
-- [ ] Pelo menos 1 ADR referencia explicitamente arquivos, módulos ou classes do código base
+- [x] Pasta docs/adrs/ contém entre 5 e 8 arquivos no formato ADR-NNN-titulo-em-kebab-case.md
+- [x] Cada ADR contém as seções Status, Contexto, Decisão, Alternativas Consideradas, Consequências
+- [x] O conjunto cobre pelo menos 5 das 6 decisões principais listadas no requisito 4
+- [x] Pelo menos 1 ADR referencia explicitamente arquivos, módulos ou classes do código base
 
 **Tracker (`docs/TRACKER.md`)**
-- [ ] Arquivo existe e segue o formato de tabela definido no requisito 5
-- [ ] Pelo menos 80% dos itens identificáveis dos documentos têm linha correspondente
-- [ ] Pelo menos 70% das linhas têm Fonte = TRANSCRICAO com timestamp válido no formato [hh:mm] Nome
-- [ ] Pelo menos 5 linhas têm Fonte = CODIGO com caminho de arquivo real
+- [x] Arquivo existe e segue o formato de tabela definido no requisito 5
+- [x] Pelo menos 80% dos itens identificáveis dos documentos têm linha correspondente
+- [x] Pelo menos 70% das linhas têm Fonte = TRANSCRICAO com timestamp válido no formato [hh:mm] Nome
+- [x] Pelo menos 5 linhas têm Fonte = CODIGO com caminho de arquivo real
 
 **README (`README.md`)**
-- [ ] Contém todas as seções obrigatórias listadas no requisito 6
-- [ ] Lista pelo menos 1 ferramenta de IA utilizada
-- [ ] Mostra pelo menos 2 prompts customizados em blocos de código
-- [ ] Descreve pelo menos 2 iterações ou ajustes concretos feitos durante a produção
+- [x] Contém todas as seções obrigatórias listadas no requisito 6
+- [x] Lista pelo menos 1 ferramenta de IA utilizada
+- [x] Mostra pelo menos 2 prompts customizados em blocos de código
+- [x] Descreve pelo menos 2 iterações ou ajustes concretos feitos durante a produção
 
 **Consistência geral**
-- [ ] Nenhum requisito, decisão ou restrição registrada nos documentos contradiz a transcrição ou o código
-- [ ] Nenhum arquivo de código mencionado nos documentos é inexistente no repositório
+- [x] Nenhum requisito, decisão ou restrição registrada nos documentos contradiz a transcrição ou o código
+- [x] Nenhum arquivo de código mencionado nos documentos é inexistente no repositório

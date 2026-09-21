@@ -4,7 +4,7 @@ description: Cria documentações do tipo ADR (Architecture Decision Records).
 ---
 
 ## Tarefa
-Gerar o arquivo `../../../docs/ADR-NNN-titulo-em-kebab-case.md`
+Gerar o arquivo `../../../docs/adrs/ADR-NNN-titulo-em-kebab-case.md`
 
 ## Requisitos
 - Os arquivos devem ser nomeados no formato ADR-NNN-titulo-em-kebab-case.md (ex: ADR-001-outbox-no-mysql.md).
