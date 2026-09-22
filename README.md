@@ -23,6 +23,17 @@ Com isso, já tinha em mãos um start consistente para o desafio, restando itera
 5. Revisão via intents/specs (+ iterações)
 6. Documentação final + checklist de critérios de aceite
 
+```mermaid
+flowchart TD
+    A["/init<br/>Geração do conhecimento do projeto"] --> B["context/intent (SDD + ContextMesh)<br/>Documento base para criação das docs"]
+    B --> C["Extração de Skills<br/>a partir dos requisitos do desafio"]
+    C --> D["Start consistente do desafio"]
+    D --> E{"Iteração<br/>quantas vezes necessário"}
+    E --> F["context/intent/review<br/>Validação dos critérios obrigatórios"]
+    F -->|Ajustes| E
+    F -->|Aprovado| G["README final<br/>Experiência do processo"]
+```
+
 
 ## Prompts customizados
 1. Optei por transformar a sessão de Requisitos das docs em skills na Spec criada no Context Mesh:
